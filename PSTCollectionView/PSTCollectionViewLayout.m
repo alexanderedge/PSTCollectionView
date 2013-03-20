@@ -341,6 +341,33 @@
             else {
                 NSMutableIndexSet *indexSet = action == PSTCollectionUpdateActionInsert ? _insertedSectionsSet : _deletedSectionsSet;
                 [indexSet addIndex:[updateItem indexPath].section];
+                
+                // loop through items in section
+                
+                
+                
+                if (action == PSTCollectionUpdateActionDelete) {
+                    
+                    NSUInteger section = [updateItem indexPathBeforeUpdate].section;
+                    
+                    for (NSUInteger item = 0; item < [collectionViewData numberOfItemsInSection:section]; item++) {
+                        
+                        PSTCollectionViewItemKey *key = [PSTCollectionViewItemKey collectionItemKeyForCellWithIndexPath:
+                                                         [NSIndexPath indexPathForItem:item inSection:section]];
+                        
+                        PSTCollectionViewLayoutAttributes *attrs = [_initialAnimationLayoutAttributesDict[key] copy];
+                        
+                        if(attrs) {
+                            [attrs setAlpha:0];
+                            _finalAnimationLayoutAttributesDict[key] = attrs;
+                        }
+                        
+                    }
+                    
+                    
+                    
+                }
+                
             }
         }
         else {
