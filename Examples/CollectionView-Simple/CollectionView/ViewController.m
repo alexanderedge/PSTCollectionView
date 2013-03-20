@@ -78,7 +78,7 @@ NSString *kCellID = @"cellID";                          // UICollectionViewCell 
     
     _sections = [NSMutableArray array];
     
-    for (NSUInteger i = 0; i < 3; i++) {
+    for (NSUInteger i = 0; i < 2; i++) {
         
         NSMutableArray *tempArray = [NSMutableArray arrayWithArray:@[[NSNull null],[NSNull null],[NSNull null]]];
         
@@ -134,22 +134,45 @@ NSString *kCellID = @"cellID";                          // UICollectionViewCell 
         
         NSArray *indexPaths = [self.collectionView indexPathsForSelectedItems];
         
-        NSArray *sortedArray = [indexPaths sortedArrayUsingComparator:^NSComparisonResult(id obj1, id obj2) {
+        NSMutableDictionary *deletionMap = [NSMutableDictionary dictionaryWithCapacity:[_sections count]];
+        
+        [indexPaths enumerateObjectsUsingBlock:^(NSIndexPath *indexPath, NSUInteger idx, BOOL *stop) {
             
-            return [obj2 compare:obj1];
+            if (!deletionMap[@(indexPath.section)]) {
+                deletionMap[@(indexPath.section)] = [NSMutableArray array];
+            }
+            
+            [deletionMap[@(indexPath.section)] addObject:indexPath];
             
         }];
         
-        [sortedArray enumerateObjectsUsingBlock:^(NSIndexPath *indexPath, NSUInteger idx, BOOL *stop) {
+        NSMutableIndexSet *sectionsToDelete = [NSMutableIndexSet indexSet];
+        NSMutableArray *itemsToDelete = [NSMutableArray array];
+        
+        [deletionMap enumerateKeysAndObjectsUsingBlock:^(NSNumber *section, NSArray *indexPaths, BOOL *stop) {
+            NSUInteger sectionInt = [section unsignedIntValue];
             
-            [_sections[indexPath.section] removeObjectAtIndex:indexPath.item];
-            
+            if ([indexPaths count] == [_sections[sectionInt] count]) {
+                // we're deleting all items in a section
+                [_sections removeObjectAtIndex:sectionInt];
+                [sectionsToDelete addIndex:sectionInt];
+            }
+            else
+            {
+                NSArray *sortedArray = [indexPaths sortedArrayUsingComparator:^NSComparisonResult(id obj1, id obj2) {
+                    return [obj2 compare:obj1];
+                }];
+                
+                [sortedArray enumerateObjectsUsingBlock:^(NSIndexPath *indexPath, NSUInteger idx, BOOL *stop) {
+                    [_sections[indexPath.section] removeObjectAtIndex:indexPath.item];
+                    [itemsToDelete addObject:indexPath];
+                }];
+            }
         }];
         
-        [self.collectionView deleteItemsAtIndexPaths:indexPaths];
-        
-        
-        
+        [self.collectionView deleteItemsAtIndexPaths:itemsToDelete];
+        [self.collectionView deleteSections:sectionsToDelete];
+
     } completion:^(BOOL finished) {
         
         [[self.collectionView indexPathsForSelectedItems] enumerateObjectsUsingBlock:^(id obj, NSUInteger idx, BOOL *stop) {
@@ -159,6 +182,8 @@ NSString *kCellID = @"cellID";                          // UICollectionViewCell 
         }];
         
     }];
+    
+    
     
 }
 
