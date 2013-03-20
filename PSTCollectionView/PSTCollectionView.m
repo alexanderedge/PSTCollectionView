@@ -1671,25 +1671,30 @@ static void PSTCollectionViewCommonSetup(PSTCollectionView *_self) {
             NSIndexPath *newIndexPath = newGlobalIndex == NSNotFound ? nil : [_update[@"newModel"] indexPathForItemAtGlobalIndex:newGlobalIndex];
             NSIndexPath *oldIndexPath = oldGlobalIndex == NSNotFound ? nil : [_update[@"oldModel"] indexPathForItemAtGlobalIndex:oldGlobalIndex];
             
-            if (newIndexPath) {
-
-
-                PSTCollectionViewLayoutAttributes* startAttrs = nil;
-                PSTCollectionViewLayoutAttributes* finalAttrs = nil;
-                
+            PSTCollectionViewLayoutAttributes* startAttrs = nil;
+            PSTCollectionViewLayoutAttributes* finalAttrs = nil;
+            
+            if (newIndexPath) {                
                 startAttrs  = [_layout initialLayoutAttributesForAppearingItemAtIndexPath:oldIndexPath];
                 finalAttrs = [_layout layoutAttributesForItemAtIndexPath:newIndexPath];
-
-                NSMutableDictionary *dic = [NSMutableDictionary dictionaryWithDictionary:@{@"view":view}];
-                if (startAttrs) dic[@"previousLayoutInfos"] = startAttrs;
-                if (finalAttrs) dic[@"newLayoutInfos"] = finalAttrs;
-
-                [animations addObject:dic];
                 PSTCollectionViewItemKey* newKey = [key copy];
                 [newKey setIndexPath:newIndexPath];
                 newAllVisibleView[newKey] = view;
-                
             }
+            else
+            {
+                startAttrs = [_layout initialLayoutAttributesForAppearingItemAtIndexPath:oldIndexPath];
+                finalAttrs = [_layout finalLayoutAttributesForDisappearingItemAtIndexPath:oldIndexPath];
+            }
+            
+            NSMutableDictionary *dic = [NSMutableDictionary dictionaryWithDictionary:@{@"view":view}];
+            if (startAttrs) dic[@"previousLayoutInfos"] = startAttrs;
+            if (finalAttrs) dic[@"newLayoutInfos"] = finalAttrs;
+            
+            [animations addObject:dic];
+            
+            
+            
         } else if (key.type == PSTCollectionViewItemTypeSupplementaryView) {
             PSTCollectionViewLayoutAttributes* startAttrs = nil;
             PSTCollectionViewLayoutAttributes* finalAttrs = nil;
