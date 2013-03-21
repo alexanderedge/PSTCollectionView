@@ -135,18 +135,28 @@ NSString *kCellID = @"cellID";                          // UICollectionViewCell 
         NSArray *indexPaths = [self.collectionView indexPathsForSelectedItems];
         
         NSArray *sortedArray = [indexPaths sortedArrayUsingComparator:^NSComparisonResult(id obj1, id obj2) {
-            
             return [obj2 compare:obj1];
-            
         }];
         
-        [sortedArray enumerateObjectsUsingBlock:^(NSIndexPath *indexPath, NSUInteger idx, BOOL *stop) {
-            
+        for (NSIndexPath *indexPath in sortedArray) {
             [_sections[indexPath.section] removeObjectAtIndex:indexPath.item];
-            
+        }
+        
+        [self.collectionView deleteItemsAtIndexPaths:sortedArray];
+        
+        NSMutableIndexSet *indexSet = [NSMutableIndexSet indexSet];
+        
+        // scan through the sections looking for empty ones
+        
+        [_sections enumerateObjectsUsingBlock:^(NSArray *items, NSUInteger idx, BOOL *stop) {
+            if (![items count]) {
+                [indexSet addIndex:idx];
+            }
         }];
         
-        [self.collectionView deleteItemsAtIndexPaths:indexPaths];
+        [_sections removeObjectsAtIndexes:indexSet];
+        
+        [self.collectionView deleteSections:indexSet];
         
         
         
