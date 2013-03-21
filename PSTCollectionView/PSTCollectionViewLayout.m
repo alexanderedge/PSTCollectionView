@@ -350,7 +350,9 @@
                     
                     NSUInteger section = [updateItem indexPathBeforeUpdate].section;
                     
-                    for (NSUInteger item = 0; item < [collectionViewData numberOfItemsInSection:section]; item++) {
+                    PSTCollectionViewData *oldCollectionViewData = update[@"oldModel"];
+                    
+                    for (NSUInteger item = 0; item < [oldCollectionViewData numberOfItemsInSection:section]; item++) {
                         
                         PSTCollectionViewItemKey *key = [PSTCollectionViewItemKey collectionItemKeyForCellWithIndexPath:
                                                          [NSIndexPath indexPathForItem:item inSection:section]];
