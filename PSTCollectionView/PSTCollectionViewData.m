@@ -111,7 +111,7 @@
 
 - (NSInteger)numberOfItemsInSection:(NSInteger)section {
     [self validateItemCounts];
-    if (section > _numSections || section < 0) {
+    if (section >= _numSections || section < 0) {
         // In case of inconsistency returns the 'less harmful' amount of items. Throwing an exception here potentially
         // causes exceptions when data is consistent. Deleting sections is one of the parts sensitive to this.
         // All checks via assertions are done on CollectionView animation methods, specially 'endAnimations'.
