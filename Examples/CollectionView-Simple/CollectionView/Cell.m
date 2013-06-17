@@ -58,6 +58,7 @@
     {
         // change to our custom selected background view
         CustomCellBackground *backgroundView = [[CustomCellBackground alloc] initWithFrame:CGRectZero];
+        backgroundView.opaque = NO;
         self.selectedBackgroundView = backgroundView;
     }
     return self;

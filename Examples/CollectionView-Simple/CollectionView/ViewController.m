@@ -49,6 +49,20 @@
 #import "ViewController.h"
 #import "DetailViewController.h"
 #import "Cell.h"
+#import <SVProgressHUD/SVProgressHUD.h>
+
+//   https://gist.github.com/kylefox/1689973
+@interface UIColor (Random)
++ (UIColor *)randomColour;
+@end
+@implementation UIColor (Random)
++ (UIColor *)randomColour{
+    CGFloat hue = ( arc4random() % 256 / 256.0 );  //  0.0 to 1.0
+    CGFloat saturation = ( arc4random() % 128 / 256.0 ) + 0.5;  //  0.5 to 1.0, away from white
+    CGFloat brightness = ( arc4random() % 128 / 256.0 ) + 0.5;  //  0.5 to 1.0, away from black
+    return [UIColor colorWithHue:hue saturation:saturation brightness:brightness alpha:1];
+}
+@end
 
 NSString *kDetailedViewControllerID = @"DetailView";    // view controller storyboard id
 NSString *kCellID = @"cellID";                          // UICollectionViewCell storyboard id
@@ -77,14 +91,15 @@ NSString *kCellID = @"cellID";                          // UICollectionViewCell 
     [super loadView];
     
     _sections = [NSMutableArray array];
-    
-    for (NSUInteger i = 0; i < 3; i++) {
-        
-        NSMutableArray *tempArray = [NSMutableArray arrayWithArray:@[[NSNull null],[NSNull null],[NSNull null]]];
-        
-        [_sections addObject:tempArray];
+    NSUInteger totalSections = arc4random_uniform(5);
+    for (NSUInteger section = 0; section < totalSections; section++) {
+        NSUInteger itemsInSection = arc4random_uniform(10);
+        NSMutableArray *items = [NSMutableArray arrayWithCapacity:itemsInSection];
+        for (NSUInteger item = 0; item < itemsInSection; item++) {
+            [items addObject:[UIColor randomColour]];
+        }
+        [_sections addObject:items];
     }
-    
 }
 
 - (void)viewDidLoad{
@@ -92,6 +107,23 @@ NSString *kCellID = @"cellID";                          // UICollectionViewCell 
     
     self.collectionView.allowsMultipleSelection = YES;
     
+}
+
+- (void)viewDidAppear:(BOOL)animated{
+    [super viewDidAppear:animated];
+    
+    [SVProgressHUD showWithStatus:@"Testing..." maskType:SVProgressHUDMaskTypeGradient];
+    double delayInSeconds = 1.0;
+    dispatch_time_t popTime = dispatch_time(DISPATCH_TIME_NOW, (int64_t)(delayInSeconds * NSEC_PER_SEC));
+    dispatch_after(popTime, dispatch_get_main_queue(), ^(void){
+        
+        [SVProgressHUD dismiss];
+        /*
+        MBProgressHUD *hud = [MBProgressHUD showHUDAddedTo:self.parentViewController.view animated:YES];
+        hud.dimBackground = YES;
+        [hud hide:YES afterDelay:2];
+         */
+    });
 }
 
 - (PSUICollectionViewCell *)collectionView:(PSUICollectionView *)cv cellForItemAtIndexPath:(NSIndexPath *)indexPath;
@@ -103,12 +135,17 @@ NSString *kCellID = @"cellID";                          // UICollectionViewCell 
     // make the cell's title the actual NSIndexPath value
     cell.label.text = [NSString stringWithFormat:@"{%ld,%ld}", (long)indexPath.row, (long)indexPath.section];
     
+    /*
     // load the image for this cell
     NSString *imageToLoad = [NSString stringWithFormat:@"%d.JPG", indexPath.row];
     cell.image.image = [UIImage imageNamed:imageToLoad];
+    */
+    
+    cell.backgroundColor = _sections[indexPath.section][indexPath.row];
     
     return cell;
 }
+
 
 // the user tapped a collection item, load and set the image on the detail view controller
 //
@@ -160,6 +197,10 @@ NSString *kCellID = @"cellID";                          // UICollectionViewCell 
         
     }];
     
+}
+
+- (BOOL)shouldAutorotateToInterfaceOrientation:(UIInterfaceOrientation)toInterfaceOrientation{
+    return YES;
 }
 
 @end
