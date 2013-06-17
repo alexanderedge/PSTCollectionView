@@ -707,6 +707,9 @@ static void PSTCollectionViewCommonSetup(PSTCollectionView *_self) {
             break;
         case PSTCollectionViewScrollPositionTop:
             targetRect = CGRectMake(targetRect.origin.x, targetRect.origin.y, targetRect.size.width, frame.size.height);
+            if (CGRectGetMinY(targetRect) < CGRectGetHeight(targetRect)) {
+                targetRect = CGRectZero;
+            }
             break;
 
         case PSTCollectionViewScrollPositionBottom:
