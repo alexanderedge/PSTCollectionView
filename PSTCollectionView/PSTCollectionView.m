@@ -124,6 +124,7 @@ CGFloat PSTSimulatorAnimationDragCoefficient(void);
 @property (nonatomic, strong) PSTCollectionViewLayout *nibLayout;
 @property (nonatomic, strong) NSDictionary *nibCellsExternalObjects;
 @property (nonatomic, strong) NSDictionary *supplementaryViewsExternalObjects;
+@property (nonatomic, strong) UITouch *currentTouch;
 @property (nonatomic, strong) NSIndexPath *touchingIndexPath;
 @property (nonatomic, strong) NSIndexPath *currentIndexPath;
 @end
@@ -740,11 +741,18 @@ static void PSTCollectionViewCommonSetup(PSTCollectionView *_self) {
 - (void)touchesBegan:(NSSet *)touches withEvent:(UIEvent *)event {
     [super touchesBegan:touches withEvent:event];
 
+    if (self.extVars.currentTouch != nil) {
+        return;
+    }
+    
+    UITouch *touch = [touches anyObject];
+    
     // reset touching state vars
+    self.extVars.currentTouch = touch;
     self.extVars.touchingIndexPath = nil;
     self.extVars.currentIndexPath = nil;
 
-    CGPoint touchPoint = [[touches anyObject] locationInView:self];
+    CGPoint touchPoint = [touch locationInView:self];
     NSIndexPath *indexPath = [self indexPathForItemAtPoint:touchPoint];
     if (indexPath && self.allowsSelection) {
         if (![self highlightItemAtIndexPath:indexPath animated:YES scrollPosition:PSTCollectionViewScrollPositionNone notifyDelegate:YES])
@@ -769,6 +777,10 @@ static void PSTCollectionViewCommonSetup(PSTCollectionView *_self) {
 - (void)touchesMoved:(NSSet *)touches withEvent:(UIEvent *)event {
     [super touchesMoved:touches withEvent:event];
 
+    if ([touches anyObject] != self.extVars.currentTouch) {
+        return;
+    }
+    
     // allows moving between highlight and unhighlight state only if setHighlighted is not overwritten
     if (self.extVars.touchingIndexPath) {
         CGPoint touchPoint = [[touches anyObject] locationInView:self];
@@ -791,6 +803,10 @@ static void PSTCollectionViewCommonSetup(PSTCollectionView *_self) {
 - (void)touchesEnded:(NSSet *)touches withEvent:(UIEvent *)event {
     [super touchesEnded:touches withEvent:event];
 
+    if ([touches anyObject] != self.extVars.currentTouch) {
+        return;
+    }
+    
     if (self.extVars.touchingIndexPath) {
         // first unhighlight the touch operation
         [self unhighlightItemAtIndexPath:self.extVars.touchingIndexPath animated:YES notifyDelegate:YES];
@@ -811,16 +827,25 @@ static void PSTCollectionViewCommonSetup(PSTCollectionView *_self) {
         self.extVars.touchingIndexPath = nil;
         self.extVars.currentIndexPath = nil;
     }
+    
+    self.extVars.currentTouch = nil;    
+    
 }
 
 - (void)touchesCancelled:(NSSet *)touches withEvent:(UIEvent *)event {
     [super touchesCancelled:touches withEvent:event];
 
+    if ([touches anyObject] != self.extVars.currentTouch) {
+        return;
+    }
+    
     // do not mark touchingIndexPath as nil because whoever cancelled this touch will need to signal a touch up event later
     if (self.extVars.touchingIndexPath) {
         // first unhighlight the touch operation
         [self unhighlightItemAtIndexPath:self.extVars.touchingIndexPath animated:YES notifyDelegate:YES];
     }
+    
+    self.extVars.currentTouch = nil;
 }
 
 - (void)cellTouchCancelled {
