@@ -984,15 +984,15 @@ static void PSTCollectionViewCommonSetup(PSTCollectionView *_self) {
 }
 
 - (void)deleteSections:(NSIndexSet *)sections {
-    // First delete all items
-    NSMutableArray *paths = [NSMutableArray new];
-    [sections enumerateIndexesUsingBlock:^(NSUInteger idx, BOOL *stop) {
-        for (int i = 0; i < [self numberOfItemsInSection:idx]; ++i) {
-            [paths addObject:[NSIndexPath indexPathForItem:i inSection:idx]];
-        }
-    }];
-    [self deleteItemsAtIndexPaths:paths];
-    // Then delete the section.
+    if (!_collectionViewFlags.updating) {
+        NSMutableArray *paths = [NSMutableArray new];
+        [sections enumerateIndexesUsingBlock:^(NSUInteger idx, BOOL *stop) {
+            for (int i = 0; i < [self numberOfItemsInSection:idx]; ++i) {
+                [paths addObject:[NSIndexPath indexPathForItem:i inSection:idx]];
+            }
+        }];
+        [self deleteItemsAtIndexPaths:paths];
+    }
     [self updateSections:sections updateAction:PSTCollectionUpdateActionDelete];
 }
 
@@ -1040,8 +1040,9 @@ static void PSTCollectionViewCommonSetup(PSTCollectionView *_self) {
 
 - (void)performBatchUpdates:(void (^)(void))updates completion:(void (^)(BOOL finished))completion {
     [self setupCellAnimations];
-
+    _collectionViewFlags.updating = YES;
     if (updates) updates();
+    _collectionViewFlags.updating = NO;
     if (completion) _updateCompletionHandler = completion;
 
     [self endItemAnimations];
@@ -2036,7 +2037,8 @@ static void PSTCollectionViewCommonSetup(PSTCollectionView *_self) {
         NSInteger deletedCount = [operations[sectionKey][@"deleted"] intValue];
         NSInteger movedInCount = [operations[sectionKey][@"movedIn"] intValue];
         NSInteger movedOutCount = [operations[sectionKey][@"movedOut"] intValue];
-
+        NSLog(@"old data: %@",oldCollectionViewData);
+        NSLog(@"new data: %@",_collectionViewData);
         NSAssert([oldCollectionViewData numberOfItemsInSection:section] + insertedCount - deletedCount + movedInCount - movedOutCount ==
                 [_collectionViewData numberOfItemsInSection:section],
         @"invalid update in section %ld: number of items after update (%ld) should be equal to the number of items before update (%ld) "\
