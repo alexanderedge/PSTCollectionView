@@ -2037,8 +2037,6 @@ static void PSTCollectionViewCommonSetup(PSTCollectionView *_self) {
         NSInteger deletedCount = [operations[sectionKey][@"deleted"] intValue];
         NSInteger movedInCount = [operations[sectionKey][@"movedIn"] intValue];
         NSInteger movedOutCount = [operations[sectionKey][@"movedOut"] intValue];
-        NSLog(@"old data: %@",oldCollectionViewData);
-        NSLog(@"new data: %@",_collectionViewData);
         NSAssert([oldCollectionViewData numberOfItemsInSection:section] + insertedCount - deletedCount + movedInCount - movedOutCount ==
                 [_collectionViewData numberOfItemsInSection:section],
         @"invalid update in section %ld: number of items after update (%ld) should be equal to the number of items before update (%ld) "\
