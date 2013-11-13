@@ -2101,8 +2101,6 @@ static void PSTCollectionViewCommonSetup(PSTCollectionView *_self) {
                 else {
                     id object = @([oldCollectionViewData globalIndexForItemAtIndexPath:updateItem.indexPathBeforeUpdate]);
                     [newModel[updateItem.indexPathBeforeUpdate.section] removeObject:object];
-                    [newModel[updateItem.indexPathAfterUpdate.section] insertObject:object
-                                                                            atIndex:updateItem.indexPathAfterUpdate.item];
                 }
             }
                 break;

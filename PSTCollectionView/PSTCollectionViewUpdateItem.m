@@ -89,6 +89,11 @@
     return _initialIndexPath;
 }
 
+- (id)finalIndexPath {
+    //TODO: check this
+    return _initialIndexPath;
+}
+
 - (NSComparisonResult)compareIndexPaths:(PSTCollectionViewUpdateItem *)otherItem {
     NSComparisonResult result = NSOrderedSame;
     NSIndexPath *selfIndexPath = nil;
@@ -102,6 +107,11 @@
         case PSTCollectionUpdateActionDelete:
             selfIndexPath = _initialIndexPath;
             otherIndexPath = [otherItem indexPath];
+            break;
+        case PSTCollectionUpdateActionMove:
+            selfIndexPath = _finalIndexPath;
+            otherIndexPath = [otherItem finalIndexPath];
+            break;
         default: break;
     }
 
